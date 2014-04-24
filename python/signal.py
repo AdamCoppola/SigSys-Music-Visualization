@@ -2,10 +2,13 @@ from numpy import *
 import scipy.io.wavfile as wio
 from scipy import signal, misc
 import matplotlib.pyplot as plt
+import matplotlib.animation as anim
 
 import time
 
-plt.ion()
+def updatePlot (handle, data):
+	handle.set_ydata(data)
+	return handle
 
 def process (data, window):
 	windows = len(data)/window
