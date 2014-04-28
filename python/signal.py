@@ -1,39 +1,67 @@
 from numpy import *
 import scipy.io.wavfile as wio
 from scipy import signal, misc
+
 import matplotlib.pyplot as plt
-import matplotlib.animation as anim
 
-import time
+def bandFFT(data, numBands, sampleRate):
+	averages = empty(shape=(numBands))
 
-def makeEven (num):
-	if num % 2:
-		return num-1
-	else:
-		return num
+	Fmax = sampleRate/2
 
-def process (data, window):
+	bandBounds = logspace(log2(Fmax/(2**(numBands-3))), log2(Fmax), num=numBands, base=2)
+	bandBounds = insert(bandBounds, 0, 0)
+
+	bandBounds = [x * len(data)/sampleRate for x in bandBounds]
+
+	print bandBounds
+
+	for band in range(0, len(bandBounds)-1):
+		lowBound = bandBounds[band]
+		highBound = bandBounds[band+1]
+
+		avg = 0
+		print "BAND"
+		print band
+		for i in range(int(lowBound), int(highBound)):
+			avg += data[i]
+
+		avg /= highBound - lowBound
+
+		averages[band] = avg
+
+	return averages
+
+def process (data, window, rate, numBands):
 	windows = len(data)/window
-	print 'WINDOWS'
-	print windows
-	spectrogram = empty(shape=(windows, window/2))
-	for i in xrange(0, windows-2):
-		spectrogram[i]=transform(data[i*window:(i+1)*window])
+	spectrogram = empty(shape=(windows, numBands))
+
+	for i in range(0, windows):
+		fourierData = transform(data[i*window : (i+1)*window])
+		fourierData = bandFFT(fourierData, numBands, rate)
+
+		spectrogram[i] = fourierData
+
 	return spectrogram
 
 def transform (data):
-	left,right = split(abs(fft.fft(data)),2)
-	ys = add(left,right[::-1])
-	return ys
+	return abs(fft.fft(data))
 
-rate, audio = wio.read('../wav/pompeii.wav')
-print "Done reading"
-laudio, raudio = zip(*audio)
-print "Done zipping"
+rate, audio = wio.read('../wav/VVVVVV.wav')
+audio, raudio = zip(*audio)
 
-spec = process(laudio, makeEven(rate))
+seconds = len(audio)/rate
 
-plt.figure(1)
-plt.matshow(spec, 1)
+windowRate = 24 #frames per second
+windowLength = int(1/float(windowRate) * rate) #samples
+
+spec = process(audio, windowLength, rate, numBands=12)
+
+print "About to pcolor"
+plt.pcolormesh(transpose(spec))
+
+plt.xlabel('Time (Frames/Second)')
+
+plt.ylabel('Frequency')
 
 plt.show()
