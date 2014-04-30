@@ -26,11 +26,12 @@ def bandFFT(data, numBands, sampleRate):
 	return averages
 
 def process (data, window, rate, numBands):
+	overlap = 1.4 # amount each window overlaps with next one (1 is no overlap)
 	windows = len(data)/window
 	spectrogram = empty(shape=(windows, numBands))
 
 	for i in range(0, windows):
-		fourierData = transform(data[i*window : (i+1)*window])
+		fourierData = transform(data[i*window : i*window + int(overlap*window)])
 		fourierData = bandFFT(fourierData, numBands, rate)
 
 		spectrogram[i] = fourierData
