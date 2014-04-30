@@ -9,20 +9,13 @@ def bandFFT(data, numBands, sampleRate):
 
 	Fmax = sampleRate/2
 
-	bandBounds = logspace(log2(Fmax/(2**(numBands-3))), log2(Fmax), num=numBands, base=2)
-	bandBounds = insert(bandBounds, 0, 0)
-
-	bandBounds = [x * len(data)/sampleRate for x in bandBounds]
-
-	print bandBounds
+	bandBounds = linspace(0, Fmax * len(data)/sampleRate, num=numBands)
 
 	for band in range(0, len(bandBounds)-1):
 		lowBound = bandBounds[band]
 		highBound = bandBounds[band+1]
 
 		avg = 0
-		print "BAND"
-		print band
 		for i in range(int(lowBound), int(highBound)):
 			avg += data[i]
 
@@ -55,9 +48,13 @@ seconds = len(audio)/rate
 windowRate = 24 #frames per second
 windowLength = int(1/float(windowRate) * rate) #samples
 
-spec = process(audio, windowLength, rate, numBands=12)
+spec = process(audio, windowLength, rate, numBands=200)
 
 print "About to pcolor"
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+
 plt.pcolormesh(transpose(spec))
 
 plt.xlabel('Time (Frames/Second)')
