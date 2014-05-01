@@ -1,18 +1,32 @@
 from numpy import *
 import scipy.io.wavfile as wio
 from scipy import signal, misc
+
 import matplotlib.pyplot as plt
-import matplotlib.animation as anim
 
-import time
+def bandFFT(data, numBands, sampleRate):
+	averages = empty(shape=(numBands))
 
-def makeEven (num):
-	if num % 2:
-		return num-1
-	else:
-		return num
+	Fmax = sampleRate/2
 
-def process (data, window):
+	bandBounds = linspace(0, Fmax * len(data)/sampleRate, num=numBands)
+
+	for band in range(0, len(bandBounds)-1):
+		lowBound = bandBounds[band]
+		highBound = bandBounds[band+1]
+
+		avg = 0
+		for i in range(int(lowBound), int(highBound)):
+			avg += data[i]
+
+		avg /= highBound - lowBound
+
+		averages[band] = avg
+
+	return averages
+
+def process (data, window, rate, numBands):
+	overlap = 1.4 # amount each window overlaps with next one (1 is no overlap)
 	windows = len(data)/window
 	print 'WINDOWS'
 	print windows
@@ -23,10 +37,24 @@ def process (data, window):
 	return spectrogram
 
 def transform (data):
-	left,right = split(abs(fft.fft(data)),2)
-	ys = add(left,right[::-1])
-	return ys
+	return abs(fft.fft(data))
 
+rate, audio = wio.read('../wav/VVVVVV.wav')
+audio, raudio = zip(*audio)
+
+seconds = len(audio)/rate
+
+windowRate = 24 #frames per second
+windowLength = int(1/float(windowRate) * rate) #samples
+
+spec = process(audio, windowLength, rate, numBands=200)
+
+print "About to pcolor"
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+
+<<<<<<< HEAD
 rate, audio = wio.read('../wav/VVVVVV.wav')
 print "Done reading"
 laudio, raudio = zip(*audio)
@@ -41,5 +69,12 @@ plt.figure(2)
 plt.pcolormesh(spec)
 
 plt.figure(3)
+=======
+plt.pcolormesh(transpose(spec))
+
+plt.xlabel('Time (Frames/Second)')
+
+plt.ylabel('Frequency')
+>>>>>>> fcd6ee9ab321e6f291db56b8f3defd60d8c6456e
 
 plt.show()
