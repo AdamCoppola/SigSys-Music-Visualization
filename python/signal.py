@@ -44,8 +44,7 @@ def transform (data):
 
 # Plots a matrix of all the frames and saves it as a video
 def plotFrames (frames, frameLength):
-	fig = plt.figure()
-	ax = fig.add_subplot(111)
+	fig, ax = plt.subplots()
 	ax.get_xaxis().set_visible(False)
 	ax.get_yaxis().set_visible(False)
 
