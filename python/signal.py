@@ -17,8 +17,9 @@ def process (data, window):
 	print 'WINDOWS'
 	print windows
 	spectrogram = empty(shape=(windows, window/2))
+	hamm = hamming(window)
 	for i in xrange(0, windows-2):
-		spectrogram[i]=transform(data[i*window:(i+1)*window])
+		spectrogram[i]=transform((data[i*window:(i+1)*window])*hamm)
 	return spectrogram
 
 def transform (data):
@@ -26,14 +27,19 @@ def transform (data):
 	ys = add(left,right[::-1])
 	return ys
 
-rate, audio = wio.read('../wav/pompeii.wav')
+rate, audio = wio.read('../wav/VVVVVV.wav')
 print "Done reading"
 laudio, raudio = zip(*audio)
 print "Done zipping"
 
 spec = process(laudio, makeEven(rate))
-
 plt.figure(1)
-plt.matshow(spec, 1)
+plt.plot(raudio)
+
+
+plt.figure(2)
+plt.pcolormesh(spec)
+
+plt.figure(3)
 
 plt.show()
