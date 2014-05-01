@@ -31,10 +31,12 @@ def bandFFT(data, numBands, sampleRate):
 
 def process (data, window, rate, numBands):
 	windows = len(data)/window
-	spectrogram = empty(shape=(windows, window))
+	spectrogram = empty(shape=(windows, numBands))
 	hamm = hamming(window)
 	for i in xrange(0, windows-2):
-		spectrogram[i]=transform((data[i*window:(i+1)*window])*hamm)
+		fourierData = transform((data[i*window:(i+1)*window])*hamm)
+		spectrogram[i] = bandFFT(fourierData, numBands, rate)
+
 	return spectrogram
 
 def transform (data):
