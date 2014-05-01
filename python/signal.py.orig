@@ -30,8 +30,11 @@ def bandFFT(data, numBands, sampleRate):
 	return averages
 
 def process (data, window, rate, numBands):
+	overlap = 1.4 # amount each window overlaps with next one (1 is no overlap)
 	windows = len(data)/window
-	spectrogram = empty(shape=(windows, window))
+	print 'WINDOWS'
+	print windows
+	spectrogram = empty(shape=(windows, window/2))
 	hamm = hamming(window)
 	for i in xrange(0, windows-2):
 		spectrogram[i]=transform((data[i*window:(i+1)*window])*hamm)
@@ -63,14 +66,39 @@ def plotFrames (frames, frameLength):
 
 	ani.save('demo.mp4',writer=writer,dpi=100)
 
+<<<<<<< HEAD
 rate, audio = wio.read('../wav/VVVVVV.wav')
 audio, raudio = zip(*audio)
+=======
+<<<<<<< HEAD
+rate, audio = wio.read('../wav/VVVVVV.wav')
+print "Done reading"
+laudio, raudio = zip(*audio)
+print "Done zipping"
+
+spec = process(laudio, makeEven(rate))
+plt.figure(1)
+plt.plot(raudio)
+
+
+plt.figure(2)
+plt.pcolormesh(spec)
+
+plt.figure(3)
+=======
+plt.pcolormesh(transpose(spec))
+>>>>>>> 9818b55f86efd1d1df12c9279771a2e5b54f682a
 
 seconds = len(audio)/rate
 
 windowRate = fps #frames per second
 windowLength = int(1/float(windowRate) * rate) #samples
 
+<<<<<<< HEAD
 spec = process(audio, windowLength, rate, numBands=300)
+=======
+plt.ylabel('Frequency')
+>>>>>>> fcd6ee9ab321e6f291db56b8f3defd60d8c6456e
+>>>>>>> 9818b55f86efd1d1df12c9279771a2e5b54f682a
 
 plotFrames(spec, windowLength)
