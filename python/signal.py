@@ -1,8 +1,12 @@
+import pylab
 from numpy import *
 import scipy.io.wavfile as wio
 from scipy import signal, misc
 
 import matplotlib.pyplot as plt
+import matplotlib.animation as anim
+
+fps = 30
 
 def bandFFT(data, numBands, sampleRate):
 	averages = empty(shape=(numBands))
@@ -41,25 +45,37 @@ def process (data, window, rate, numBands):
 def transform (data):
 	return abs(fft.fft(data))
 
+# Plots a matrix of all the frames and saves it as a video
+def plotFrames (frames, frameLength):
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+	ax.get_xaxis().set_visible(False)
+	ax.get_yaxis().set_visible(False)
+
+	x = linspace(0, len(frames[0])-1, num=len(frames[0]))
+
+	line, = ax.semilogx(frames[0])
+ 
+	fig.set_size_inches([5,5])
+
+	def update_img(n):
+		y = frames[n]
+		line.set_data(x, y)
+		return line,
+
+	ani = anim.FuncAnimation(fig,update_img,frames=len(frames),interval=1/float(fps))
+	writer = anim.writers['ffmpeg'](fps=fps)
+
+	ani.save('demo.mp4',writer=writer,dpi=100)
+
 rate, audio = wio.read('../wav/VVVVVV.wav')
 audio, raudio = zip(*audio)
 
 seconds = len(audio)/rate
 
-windowRate = 24 #frames per second
+windowRate = fps #frames per second
 windowLength = int(1/float(windowRate) * rate) #samples
 
-spec = process(audio, windowLength, rate, numBands=200)
+spec = process(audio, windowLength, rate, numBands=300)
 
-print "About to pcolor"
-
-fig = plt.figure()
-ax = fig.add_subplot(111)
-
-plt.pcolormesh(transpose(spec))
-
-plt.xlabel('Time (Frames/Second)')
-
-plt.ylabel('Frequency')
-
-plt.show()
+plotFrames(spec, windowLength)
