@@ -50,14 +50,15 @@ def plotFrames (frames, frameLength):
 
 	x = linspace(0, len(frames[0])-1, num=len(frames[0]))
 
-	line, = ax.semilogx(frames[0])
+	img = ax.imshow(frames[0])
  
 	fig.set_size_inches([5,5])
 
 	def update_img(n):
-		y = frames[n]
-		line.set_data(x, y)
-		return line,
+		img.set_array(frames[n])
+		print "UPDATE IMG"
+		print n
+		return img
 
 	ani = anim.FuncAnimation(fig,update_img,frames=len(frames),interval=1/float(fps))
 	writer = anim.writers['ffmpeg'](fps=fps)
