@@ -6,8 +6,6 @@ from scipy import signal, misc
 import matplotlib.pyplot as plt
 import matplotlib.animation as anim
 
-import numpy.linalg as la
-
 fps = 30
 
 # Takes an N-element array of doubles
@@ -63,8 +61,11 @@ def transform (data):
 def plotFrames (frames, frameLength, Hmax):
 	fig, ax = plt.subplots()
 
+	ax.get_xaxis().set_visible(False)
+	ax.get_yaxis().set_visible(False)
+
 	frameImg = imageGen(frames[0], Hmax)
-	img = ax.imshow(frameImg, interpolation="none")
+	img = ax.imshow(frameImg, interpolation='none', cmap='bone', origin='lower')
 
 	def update_img(n):
 		frameImg = imageGen(frames[n], Hmax)
