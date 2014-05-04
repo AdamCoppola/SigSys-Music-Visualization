@@ -29,7 +29,7 @@ def bandFFT(data, numBands, sampleRate):
 
 	Fmax = sampleRate/2
 
-	bandBounds = linspace(0, Fmax * len(data)/sampleRate, num=numBands)
+	bandBounds = logspace(1, log10(Fmax * len(data)/sampleRate), num=numBands, base=10)
 
 	for band in range(0, len(bandBounds)-1):
 		lowBound = bandBounds[band]
