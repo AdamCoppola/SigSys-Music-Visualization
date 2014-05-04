@@ -8,12 +8,28 @@ import matplotlib.animation as anim
 
 fps = 30
 
+# Takes an N-element array of doubles
+# Returns an N*N matrix representing bars
+# where the height of bar n is determined by element n
+def imageGen(frame, Hmax):
+	N = len(frame)
+	frame = [x/Hmax for x in frame]
+
+	image = zeros((N, N))
+
+	for c in xrange(0, N):
+		col = linspace(0, 1, N)
+		height = frame[c]
+		col = [1 if x < height else 0 for x in col]
+		image[:, c] = col
+	return image
+
 def bandFFT(data, numBands, sampleRate):
 	averages = empty(shape=(numBands))
 
 	Fmax = sampleRate/2
 
-	bandBounds = logspace(-2, log10((Fmax * len(data)/sampleRate)), num=numBands)
+	bandBounds = logspace(1, log10(Fmax * len(data)/sampleRate), num=numBands, base=10)
 
 	for band in range(0, len(bandBounds)-1):
 		lowBound = bandBounds[band]
@@ -42,25 +58,20 @@ def process (data, window, rate, numBands):
 def transform (data):
 	return abs(fft.fft(data))
 
-# Plots a matrix of all the frames and saves it as a video
-def plotFrames (frames, frameLength):
-	fig = plt.figure()
-	ax = fig.add_subplot(111)
+def plotFrames (frames, frameLength, Hmax):
+	fig, ax = plt.subplots()
+
 	ax.get_xaxis().set_visible(False)
 	ax.get_yaxis().set_visible(False)
 
-	x = linspace(0, len(frames[0])-1, num=len(frames[0]))
-
-	line, = ax.plot(frames[0])
- 
-	fig.set_size_inches([5,5])
+	frameImg = imageGen(frames[0], Hmax)
+	img = ax.imshow(frameImg, interpolation='none', cmap='bone', origin='lower')
 
 	def update_img(n):
-		y = frames[n]
-		line.set_data(x, y)
-		return line,
+		frameImg = imageGen(frames[n], Hmax)
+		img.set_array(frameImg)
 
-	ani = anim.FuncAnimation(fig,update_img,frames=len(frames),interval=1/float(fps))
+	ani = anim.FuncAnimation(fig, update_img, frames=len(frames), interval=1/float(fps))
 	writer = anim.writers['ffmpeg'](fps=fps)
 
 	ani.save('demo.mp4',writer=writer,dpi=100)
@@ -86,8 +97,10 @@ seconds = len(audio)/rate
 windowRate = fps #frames per second
 windowLength = int(1/float(windowRate) * rate) #samples
 
-spec = process(audio, windowLength, rate, numBands=300)
+spec = process(audio, windowLength, rate, numBands=30)
+Hmax = amax(spec[8:-8])
+
 
 filteredSpec = freqlowpass(spec)
 
-plotFrames(filteredSpec, windowLength)
+plotFrames(spec, windowLength, Hmax)
