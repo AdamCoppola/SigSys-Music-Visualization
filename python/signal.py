@@ -6,7 +6,25 @@ from scipy import signal, misc
 import matplotlib.pyplot as plt
 import matplotlib.animation as anim
 
+import numpy.linalg as la
+
 fps = 30
+
+# Takes an N-element array of doubles
+# Returns an N*N matrix representing bars
+# where the height of bar n is determined by element n
+def imageGen(frame, Hmax):
+	N = len(frame)
+	frame = [x/Hmax for x in frame]
+
+	image = zeros((N, N))
+
+	for c in xrange(0, N):
+		col = linspace(0, 1, N)
+		height = frame[c]
+		col = [1 if x < height else 0 for x in col]
+		image[:, c] = col
+	return image
 
 def bandFFT(data, numBands, sampleRate):
 	averages = empty(shape=(numBands))
@@ -42,25 +60,17 @@ def process (data, window, rate, numBands):
 def transform (data):
 	return abs(fft.fft(data))
 
-# Plots a matrix of all the frames and saves it as a video
-def plotFrames (frames, frameLength):
+def plotFrames (frames, frameLength, Hmax):
 	fig, ax = plt.subplots()
-	ax.get_xaxis().set_visible(False)
-	ax.get_yaxis().set_visible(False)
 
-	x = linspace(0, len(frames[0])-1, num=len(frames[0]))
-
-	img = ax.imshow(frames[0])
- 
-	fig.set_size_inches([5,5])
+	frameImg = imageGen(frames[0], Hmax)
+	img = ax.imshow(frameImg, interpolation="none")
 
 	def update_img(n):
-		img.set_array(frames[n])
-		print "UPDATE IMG"
-		print n
-		return img
+		frameImg = imageGen(frames[n], Hmax)
+		img.set_array(frameImg)
 
-	ani = anim.FuncAnimation(fig,update_img,frames=len(frames),interval=1/float(fps))
+	ani = anim.FuncAnimation(fig, update_img, frames=len(frames), interval=1/float(fps))
 	writer = anim.writers['ffmpeg'](fps=fps)
 
 	ani.save('demo.mp4',writer=writer,dpi=100)
@@ -73,6 +83,9 @@ seconds = len(audio)/rate
 windowRate = fps #frames per second
 windowLength = int(1/float(windowRate) * rate) #samples
 
-spec = process(audio, windowLength, rate, numBands=300)
+spec = process(audio, windowLength, rate, numBands=30)
+Hmax = amax(spec[8:-8])
 
-plotFrames(spec, windowLength)
+print Hmax
+
+plotFrames(spec, windowLength, Hmax)
