@@ -13,7 +13,7 @@ def bandFFT(data, numBands, sampleRate):
 
 	Fmax = sampleRate/2
 
-	bandBounds = linspace(0, Fmax * len(data)/sampleRate, num=numBands)
+	bandBounds = logspace(-2, log10((Fmax * len(data)/sampleRate)), num=numBands)
 
 	for band in range(0, len(bandBounds)-1):
 		lowBound = bandBounds[band]
@@ -51,7 +51,7 @@ def plotFrames (frames, frameLength):
 
 	x = linspace(0, len(frames[0])-1, num=len(frames[0]))
 
-	line, = ax.semilogx(frames[0])
+	line, = ax.plot(frames[0])
  
 	fig.set_size_inches([5,5])
 
@@ -65,6 +65,19 @@ def plotFrames (frames, frameLength):
 
 	ani.save('demo.mp4',writer=writer,dpi=100)
 
+# make this better when we know which filter to use.
+def freqlowpass(signal):
+	filtered = signal
+	cutoff = 150
+	print len(signal)
+	print len(signal[1])
+	for i in xrange(0, len(signal)):
+		for j in xrange(0, len(signal[i])):
+			if j > cutoff:
+				filtered[i][j] = 0
+
+	return filtered
+
 rate, audio = wio.read('../wav/VVVVVV.wav')
 audio, raudio = zip(*audio)
 
@@ -75,4 +88,6 @@ windowLength = int(1/float(windowRate) * rate) #samples
 
 spec = process(audio, windowLength, rate, numBands=300)
 
-plotFrames(spec, windowLength)
+filteredSpec = freqlowpass(spec)
+
+plotFrames(filteredSpec, windowLength)
