@@ -76,6 +76,19 @@ def plotFrames (frames, frameLength, Hmax):
 
 	ani.save('demo.mp4', writer=writer, dpi=100)
 
+# make this better when we know which filter to use.
+def freqlowpass(signal):
+	filtered = signal
+	cutoff = 150
+	print len(signal)
+	print len(signal[1])
+	for i in xrange(0, len(signal)):
+		for j in xrange(0, len(signal[i])):
+			if j > cutoff:
+				filtered[i][j] = 0
+
+	return filtered
+
 rate, audio = wio.read('../wav/VVVVVV.wav')
 audio, raudio = zip(*audio)
 
@@ -87,6 +100,7 @@ windowLength = int(1/float(windowRate) * rate) #samples
 spec = process(audio, windowLength, rate, numBands=50)
 Hmax = amax(spec[8:-8])
 
-print Hmax
+
+filteredSpec = freqlowpass(spec)
 
 plotFrames(spec, windowLength, Hmax)
