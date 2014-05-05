@@ -9,16 +9,16 @@ import matplotlib.animation as anim
 fps = 60
 
 # Takes an N-element array of doubles
-# Returns an N*N matrix representing bars
+# Returns an N/2*N matrix representing bars
 # where the height of bar n is determined by element n
 def imageGen(frame, Hmax):
 	N = len(frame)
 	frame = [x/Hmax for x in frame]
 
-	image = zeros((N, N))
+	image = zeros((N/2, N))
 
 	for c in xrange(0, N):
-		col = logspace(-2, 0, N)
+		col = logspace(-2, 0, N/2)
 		height = frame[c]
 		col = [height if x < height else 0 for x in col]
 		image[:, c] = col
