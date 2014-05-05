@@ -20,7 +20,7 @@ def imageGen(frame, Hmax):
 	for c in xrange(0, N):
 		col = logspace(-2, 0, N)
 		height = frame[c]
-		col = [1 if x < height else 0 for x in col]
+		col = [height if x < height else 0 for x in col]
 		image[:, c] = col
 	return image
 
@@ -65,7 +65,7 @@ def plotFrames (frames, frameLength, Hmax):
 	# ax.get_yaxis().set_visible(False)
 
 	frameImg = imageGen(frames[0], Hmax)
-	img = ax.imshow(frameImg, interpolation='none', cmap='bone', origin='lower')
+	img = ax.imshow(frameImg, interpolation='none', cmap='GnBu', origin='lower')
 
 	def update_img(n):
 		frameImg = imageGen(frames[n], Hmax)
