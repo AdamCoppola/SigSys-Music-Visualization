@@ -1,4 +1,3 @@
-import pylab
 from numpy import *
 import scipy.io.wavfile as wio
 from scipy import signal as sig
@@ -7,21 +6,27 @@ from scipy import misc
 import matplotlib.pyplot as plt
 import matplotlib.animation as anim
 
-fps = 60
+import bpm
+
+fps = 30
 
 # Takes an N-element array of doubles
 # Returns an N/2*N matrix representing bars
 # where the height of bar n is determined by element n
-def imageGen(frame, Hmax):
+def imageGen(frame, Hmax, beatSpec):
 	N = len(frame)
 	frame = [x/Hmax for x in frame]
 
 	image = zeros((N/2, N))
 
 	for c in xrange(0, N):
-		col = logspace(-2, 0, N/2)
+		col = logspace(-1, 0, N/2)
 		height = frame[c]
-		col = [height if x < height else 0 for x in col]
+
+		fg = height
+		bg = beatSpec
+
+		col = [fg if x < height else bg for x in col]
 		image[:, c] = col
 	return image
 
@@ -30,7 +35,7 @@ def bandFFT(data, numBands, sampleRate):
 
 	Fmax = sampleRate/2
 
-	bandBounds = logspace(log10(20), log10((Fmax * len(data)/sampleRate)*.75), num=numBands, base=10)
+	bandBounds = logspace(log10(20), log10((Fmax * len(data)/sampleRate)), num=numBands, base=10)
 
 	for band in range(0, len(bandBounds)-1):
 		lowBound = bandBounds[band]
@@ -46,30 +51,37 @@ def bandFFT(data, numBands, sampleRate):
 
 	return averages
 
-def process (data, window, rate, numBands):
+def windowAudio (data, window):
 	windows = len(data)/window
-	spectrogram = empty(shape=(windows, numBands))
 	hamm = hamming(window)
+
+	frames = zeros((windows, window))
 	for i in xrange(0, windows-2):
-		fourierData = transform((data[i*window:(i+1)*window])*hamm)
-		spectrogram[i] = bandFFT(fourierData, numBands, rate)
+		frames[i] = data[i*window:(i+1)*window]
+
+	return frames
+
+def process (data, window, rate, numBands):
+	frames = windowAudio(data, window)
+	hamm = hamming(window/2)
+
+	spectrogram = [bandFFT(bpm.transform(x)*hamm, numBands, rate) for x in frames]
 
 	return spectrogram
 
-def transform (data):
-	return abs(fft.fft(data))
-
-def plotFrames (frames, frameLength, Hmax, filename):
+def plotFrames (frames, frameLength, Hmax, beatSpec, filename):
 	fig, ax = plt.subplots()
+
+	maxBeat = amax(beatSpec)
 
 	# ax.get_xaxis().set_visible(False)
 	# ax.get_yaxis().set_visible(False)
 
-	frameImg = imageGen(frames[0], Hmax)
+	frameImg = imageGen(frames[0], Hmax, beatSpec[0]/maxBeat)
 	img = ax.imshow(frameImg, interpolation='none', cmap='GnBu', origin='lower')
 
 	def update_img(n):
-		frameImg = imageGen(frames[n], Hmax)
+		frameImg = imageGen(frames[n], Hmax, beatSpec[n]/maxBeat)
 		img.set_array(frameImg)
 
 	ani = anim.FuncAnimation(fig, update_img, frames=len(frames), interval=1/float(fps))
@@ -107,27 +119,32 @@ def FIRfilter(signal, rate, numSamples):
 	filtered = sig.lfilter(taps, 1.0, signal)
 	return filtered
 
-rate, audio = wio.read('../wav/better.wav')
+rate, audio = wio.read('../wav/music.wav')
 
-seconds = len(audio)/rate
+seconds = float(len(audio))/rate
 
 windowRate = fps #frames per second
 windowLength = int(1/float(windowRate) * rate) #samples
 
-# averagedAudio = movingAverage(audio, 25)
+smat = bpm.simMatrix(windowAudio(audio, windowLength))
+# bpm.beatSpectrum(smat, seconds, 1, 0, rate)
+spec = process(audio, windowLength, rate, numBands=60)
 
-spec = process(audio, windowLength, rate, numBands=30
+beatSpec = bpm.autocorr(smat)
+
+# bpm.getBPM(beatSpec, rate)
+
+# plt.plot(linspace(0, seconds, len(beatSpec)), beatSpec)
+
+# plt.xlabel('Time (seconds)')
+# plt.ylabel('Beat Spectrum')
+
+# plt.xlim((0, seconds))
+
+# plt.title('Beat Spectrum Intensity Over Time')
+
+# plt.show()
+
 Hmax = amax(spec[8:-8])
 
-filteredAudio = FIRfilter(audio, rate, len(audio))
-#filteredSpec = freqlowpass(spec)
-
-filteredSpec = process(filteredAudio, windowLength, rate, numbands=30)
-plotFrames(spec, windowLength, Hmax, 'nonfiltered.mp4')
-plotFrames(filteredspec, windowLength, Hmax, 'filtered.mp4')
-
-plt.figure(0)
-plt.plot(audio)
-plt.figure(1)
-plt.plot(filteredAudio,'r')
-plt.show()
+plotFrames(spec, windowLength, Hmax, beatSpec, 'nonfiltered.mp4')
