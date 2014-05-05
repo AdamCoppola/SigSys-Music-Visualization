@@ -8,7 +8,7 @@ import matplotlib.animation as anim
 
 import bpm
 
-fps = 60
+fps = 30
 
 # Takes an N-element array of doubles
 # Returns an N/2*N matrix representing bars
@@ -116,16 +116,29 @@ def FIRfilter(signal, rate, numSamples):
 	filtered = sig.lfilter(taps, 1.0, signal)
 	return filtered
 
-rate, audio = wio.read('../wav/atc.wav')
+rate, audio = wio.read('../wav/music.wav')
 
-seconds = len(audio)/rate
+seconds = float(len(audio))/rate
 
 windowRate = fps #frames per second
 windowLength = int(1/float(windowRate) * rate) #samples
 
 smat = bpm.simMatrix(windowAudio(audio, windowLength))
-bpm.beatSpectrum(smat, seconds, 2, 6, rate)
+# bpm.beatSpectrum(smat, seconds, 1, 0, rate)
 # spec = process(audio, windowLength, rate, numBands=30)
+
+auto = bpm.autocorr(smat)
+
+plt.plot(linspace(0, seconds, len(auto)), auto[0])
+
+plt.xlabel('Time (seconds)')
+plt.ylabel('Beat Spectrum')
+
+plt.xlim((0, seconds))
+
+plt.title('Beat Spectrum Intensity Over Time')
+
+plt.show()
 
 # Hmax = amax(spec[8:-8])
 

@@ -9,7 +9,6 @@ import numpy.linalg as la
 # takes frames
 # returns a 2D similarity matrix and the duration of the sample
 def simMatrix(frames):
-	print shape(frames)
 	rows = len(frames)
 
 	sim = zeros((rows, rows))
@@ -20,16 +19,17 @@ def simMatrix(frames):
 			mag = (la.norm(fi)*la.norm(fj))
 
 			if mag == 0.:
-				sim[i][j] = 0
+				sim[i][j] = 1
 			else:
-				sim[i][j] = 1-dot(fi, fj)/(la.norm(fi)*la.norm(fj))
+				sim[i][j] = dot(fi, fj)/(la.norm(fi)*la.norm(fj))
 
-	# plt.figure(1)
 	# plt.matshow(sim, cmap='bone', origin='lower')
 
 	# plt.xlabel('i')
 	# plt.ylabel('j')
-	# plt.title('ATC Similarity Matrix')
+	# plt.title('Music Similarity Matrix')
+
+	# plt.show()
 
 	return sim
 
@@ -48,7 +48,7 @@ def beatSpectrum(smat, dur, T, t0, rate):
 			sum += smat[offset+i + j, j]
 		spec[i] = sum
 
-	plt.plot(linspace(t0, t0+T, len(spec)), spec)
+	plt.plot(linspace(0, T, len(spec)), spec)
 
 	plt.xlabel('Time (seconds)')
 	plt.ylabel('Beat Spectrum')
@@ -57,6 +57,13 @@ def beatSpectrum(smat, dur, T, t0, rate):
 
 	plt.show()
 	return spec
+
+def autocorr(x):
+    corr2d = sig.correlate2d(x, x, mode='same')
+
+    return corr2d
+
+
 
 
 
