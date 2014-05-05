@@ -34,13 +34,16 @@ def simMatrix(frames):
 	return sim
 
 def acorr(mat):
+	print "BEGAN AUTOCORRELATION"
 	X = len(mat)
 	sums = zeros(X)
 
 	for x in xrange(0, X):
+		print x
 		for i in xrange(0, X):
 			for j in xrange(0, len(mat[i])):
 				sums[i] += mat[i][j]*mat[(i+x)%X][(j+x)%X]
+	print "FINISHED AUTOCORRELATION"
 
 	return sums
 
