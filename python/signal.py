@@ -6,7 +6,7 @@ from scipy import signal, misc
 import matplotlib.pyplot as plt
 import matplotlib.animation as anim
 
-fps = 30
+fps = 60
 
 # Takes an N-element array of doubles
 # Returns an N*N matrix representing bars
@@ -18,7 +18,7 @@ def imageGen(frame, Hmax):
 	image = zeros((N, N))
 
 	for c in xrange(0, N):
-		col = linspace(0, 1, N)
+		col = logspace(-2, 0, N)
 		height = frame[c]
 		col = [1 if x < height else 0 for x in col]
 		image[:, c] = col
@@ -29,7 +29,7 @@ def bandFFT(data, numBands, sampleRate):
 
 	Fmax = sampleRate/2
 
-	bandBounds = logspace(1, log10(Fmax * len(data)/sampleRate), num=numBands, base=10)
+	bandBounds = logspace(log10(20), log10((Fmax * len(data)/sampleRate)*.75), num=numBands, base=10)
 
 	for band in range(0, len(bandBounds)-1):
 		lowBound = bandBounds[band]
@@ -61,8 +61,8 @@ def transform (data):
 def plotFrames (frames, frameLength, Hmax):
 	fig, ax = plt.subplots()
 
-	ax.get_xaxis().set_visible(False)
-	ax.get_yaxis().set_visible(False)
+	# ax.get_xaxis().set_visible(False)
+	# ax.get_yaxis().set_visible(False)
 
 	frameImg = imageGen(frames[0], Hmax)
 	img = ax.imshow(frameImg, interpolation='none', cmap='bone', origin='lower')
@@ -74,7 +74,7 @@ def plotFrames (frames, frameLength, Hmax):
 	ani = anim.FuncAnimation(fig, update_img, frames=len(frames), interval=1/float(fps))
 	writer = anim.writers['ffmpeg'](fps=fps)
 
-	ani.save('demo.mp4',writer=writer,dpi=100)
+	ani.save('demo.mp4', writer=writer, dpi=100)
 
 rate, audio = wio.read('../wav/VVVVVV.wav')
 audio, raudio = zip(*audio)
@@ -84,7 +84,7 @@ seconds = len(audio)/rate
 windowRate = fps #frames per second
 windowLength = int(1/float(windowRate) * rate) #samples
 
-spec = process(audio, windowLength, rate, numBands=30)
+spec = process(audio, windowLength, rate, numBands=50)
 Hmax = amax(spec[8:-8])
 
 print Hmax
