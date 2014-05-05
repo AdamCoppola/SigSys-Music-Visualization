@@ -10,6 +10,10 @@ import bpm
 
 fps = 30
 
+from multiprocessing import Pool
+
+pool = Pool()
+
 # Takes an N-element array of doubles
 # Returns an N/2*N matrix representing bars
 # where the height of bar n is determined by element n
@@ -23,7 +27,7 @@ def imageGen(frame, Hmax, beatSpec):
 		col = logspace(-1.5, 0, N/2)
 		height = frame[c]
 
-		specFactor = .3
+		specFactor = .4
 		fg = 1-specFactor*height
 		bg = (1-specFactor)*beatSpec
 
@@ -79,7 +83,7 @@ def plotFrames (frames, frameLength, Hmax, beatSpec, filename):
 	ax.get_yaxis().set_visible(False)
 
 	frameImg = imageGen(frames[0], Hmax, beatSpec[0]/maxBeat)
-	img = ax.imshow(frameImg, interpolation='none', cmap='RdYlBu', origin='lower')
+	img = ax.imshow(frameImg, interpolation='none', cmap='RdYlBu_r', origin='lower')
 
 	def update_img(n):
 		frameImg = imageGen(frames[n], Hmax, beatSpec[n]/maxBeat)
