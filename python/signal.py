@@ -20,7 +20,7 @@ def imageGen(frame, Hmax):
 	image = zeros((N/2, N))
 
 	for c in xrange(0, N):
-		col = logspace(-2, 0, N/2)
+		col = logspace(-1, 0, N/2)
 		height = frame[c]
 		col = [height if x < height else 0 for x in col]
 		image[:, c] = col
@@ -31,7 +31,7 @@ def bandFFT(data, numBands, sampleRate):
 
 	Fmax = sampleRate/2
 
-	bandBounds = logspace(log10(20), log10((Fmax * len(data)/sampleRate)*.75), num=numBands, base=10)
+	bandBounds = logspace(log10(20), log10((Fmax * len(data)/sampleRate)), num=numBands, base=10)
 
 	for band in range(0, len(bandBounds)-1):
 		lowBound = bandBounds[band]
@@ -59,14 +59,11 @@ def windowAudio (data, window):
 
 def process (data, window, rate, numBands):
 	frames = windowAudio(data, window)
-	hamm = hamming(window)
+	hamm = hamming(window/2)
 
-	spectrogram = [bandFFT(transform(x)*hamm, numBands, rate) for x in frames]
+	spectrogram = [bandFFT(bpm.transform(x)*hamm, numBands, rate) for x in frames]
 
 	return spectrogram
-
-def transform (data):
-	return abs(fft.fft(data))
 
 def plotFrames (frames, frameLength, Hmax, filename):
 	fig, ax = plt.subplots()
@@ -123,23 +120,25 @@ seconds = float(len(audio))/rate
 windowRate = fps #frames per second
 windowLength = int(1/float(windowRate) * rate) #samples
 
-smat = bpm.simMatrix(windowAudio(audio, windowLength))
+# smat = bpm.simMatrix(windowAudio(audio, windowLength))
 # bpm.beatSpectrum(smat, seconds, 1, 0, rate)
-# spec = process(audio, windowLength, rate, numBands=30)
+spec = process(audio, windowLength, rate, numBands=60)
 
-auto = bpm.autocorr(smat)
+# beatSpec = bpm.autocorr(smat)
 
-plt.plot(linspace(0, seconds, len(auto)), auto)
+# bpm.getBPM(beatSpec, rate)
 
-plt.xlabel('Time (seconds)')
-plt.ylabel('Beat Spectrum')
+# plt.plot(linspace(0, seconds, len(beatSpec)), beatSpec)
 
-plt.xlim((0, seconds))
+# plt.xlabel('Time (seconds)')
+# plt.ylabel('Beat Spectrum')
 
-plt.title('Beat Spectrum Intensity Over Time')
+# plt.xlim((0, seconds))
 
-plt.show()
+# plt.title('Beat Spectrum Intensity Over Time')
 
-# Hmax = amax(spec[8:-8])
+# plt.show()
 
-# plotFrames(spec, windowLength, Hmax, 'nonfiltered.mp4')
+Hmax = amax(spec[8:-8])
+
+plotFrames(spec, windowLength, Hmax, 'nonfiltered.mp4')

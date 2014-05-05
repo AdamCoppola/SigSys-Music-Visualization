@@ -33,30 +33,13 @@ def simMatrix(frames):
 
 	return sim
 
-# Finds beat spectrum with length dur for a given similarity matrix with a given duration
-# along a time interval T with start time t0
-def beatSpectrum(smat, dur, T, t0, rate):
-	X = len(smat)
-	samples = int(X*float(T)/dur)
+# Finds BPM from a given beat spec
+def getBPM(beatSpec, sampleRate):
+	BeatSpec = transform(beatSpec)
 
-	offset = int(X*float(t0)/dur)
-
-	spec = zeros(samples)
-	for i in xrange(0, samples):
-		sum = 0
-		for j in xrange(0, samples):
-			sum += smat[offset+i + j, j]
-		spec[i] = sum
-
-	plt.plot(linspace(0, T, len(spec)), spec)
-
-	plt.xlabel('Time (seconds)')
-	plt.ylabel('Beat Spectrum')
-
-	plt.title('Beat Spectrum Intensity Over Time')
-
-	plt.show()
-	return spec
+def transform (data):
+	left,right = split(abs(fft.fft(data)),2)
+	return add(left,right[::-1])
 
 def autocorr(x):
     corr2d = sig.correlate2d(x, x, mode='same')
@@ -64,12 +47,3 @@ def autocorr(x):
     corr = [std(c) for c in corr2d]
 
     return corr
-
-
-
-
-
-
-
-
-
