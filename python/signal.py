@@ -20,11 +20,12 @@ def imageGen(frame, Hmax, beatSpec):
 	image = zeros((N/2, N))
 
 	for c in xrange(0, N):
-		col = logspace(-1, 0, N/2)
+		col = logspace(-1.5, 0, N/2)
 		height = frame[c]
 
-		fg = height
-		bg = beatSpec
+		specFactor = .3
+		fg = 1-specFactor*height
+		bg = (1-specFactor)*beatSpec
 
 		col = [fg if x < height else bg for x in col]
 		image[:, c] = col
@@ -74,20 +75,20 @@ def plotFrames (frames, frameLength, Hmax, beatSpec, filename):
 
 	maxBeat = amax(beatSpec)
 
-	# ax.get_xaxis().set_visible(False)
-	# ax.get_yaxis().set_visible(False)
+	ax.get_xaxis().set_visible(False)
+	ax.get_yaxis().set_visible(False)
 
 	frameImg = imageGen(frames[0], Hmax, beatSpec[0]/maxBeat)
-	img = ax.imshow(frameImg, interpolation='none', cmap='GnBu', origin='lower')
+	img = ax.imshow(frameImg, interpolation='none', cmap='RdYlBu', origin='lower')
 
 	def update_img(n):
 		frameImg = imageGen(frames[n], Hmax, beatSpec[n]/maxBeat)
 		img.set_array(frameImg)
 
 	ani = anim.FuncAnimation(fig, update_img, frames=len(frames), interval=1/float(fps))
-	writer = anim.writers['ffmpeg'](fps=fps)
+	writer = anim.writers['ffmpeg'](fps=fps, bitrate=16000)
 
-	ani.save(filename,writer=writer,dpi=100)
+	ani.save(filename, writer=writer, dpi=100)
 
 # make this better when we know which filter to use.
 def freqlowpass(signal):
