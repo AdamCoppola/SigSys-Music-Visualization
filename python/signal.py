@@ -13,7 +13,7 @@ fps = 30
 # Takes an N-element array of doubles
 # Returns an N/2*N matrix representing bars
 # where the height of bar n is determined by element n
-def imageGen(frame, Hmax):
+def imageGen(frame, Hmax, beatSpec):
 	N = len(frame)
 	frame = [x/Hmax for x in frame]
 
@@ -22,7 +22,11 @@ def imageGen(frame, Hmax):
 	for c in xrange(0, N):
 		col = logspace(-1, 0, N/2)
 		height = frame[c]
-		col = [height if x < height else 0 for x in col]
+
+		fg = height
+		bg = beatSpec
+
+		col = [fg if x < height else bg for x in col]
 		image[:, c] = col
 	return image
 
@@ -65,17 +69,17 @@ def process (data, window, rate, numBands):
 
 	return spectrogram
 
-def plotFrames (frames, frameLength, Hmax, filename):
+def plotFrames (frames, frameLength, Hmax, beatSpec, filename):
 	fig, ax = plt.subplots()
 
 	# ax.get_xaxis().set_visible(False)
 	# ax.get_yaxis().set_visible(False)
 
-	frameImg = imageGen(frames[0], Hmax)
+	frameImg = imageGen(frames[0], Hmax, beatSpec[0])
 	img = ax.imshow(frameImg, interpolation='none', cmap='GnBu', origin='lower')
 
 	def update_img(n):
-		frameImg = imageGen(frames[n], Hmax)
+		frameImg = imageGen(frames[n], Hmax, beatSpec[n])
 		img.set_array(frameImg)
 
 	ani = anim.FuncAnimation(fig, update_img, frames=len(frames), interval=1/float(fps))
@@ -120,11 +124,11 @@ seconds = float(len(audio))/rate
 windowRate = fps #frames per second
 windowLength = int(1/float(windowRate) * rate) #samples
 
-# smat = bpm.simMatrix(windowAudio(audio, windowLength))
+smat = bpm.simMatrix(windowAudio(audio, windowLength))
 # bpm.beatSpectrum(smat, seconds, 1, 0, rate)
 spec = process(audio, windowLength, rate, numBands=60)
 
-# beatSpec = bpm.autocorr(smat)
+beatSpec = bpm.autocorr(smat)
 
 # bpm.getBPM(beatSpec, rate)
 
@@ -141,4 +145,4 @@ spec = process(audio, windowLength, rate, numBands=60)
 
 Hmax = amax(spec[8:-8])
 
-plotFrames(spec, windowLength, Hmax, 'nonfiltered.mp4')
+plotFrames(spec, windowLength, Hmax, beatSpec, 'nonfiltered.mp4')
