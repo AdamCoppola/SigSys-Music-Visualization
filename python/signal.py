@@ -114,20 +114,7 @@ seconds = len(audio)/rate
 windowRate = fps #frames per second
 windowLength = int(1/float(windowRate) * rate) #samples
 
-# averagedAudio = movingAverage(audio, 25)
-
-spec = process(audio, windowLength, rate, numBands=30
+spec = process(audio, windowLength, rate, numBands=30)
 Hmax = amax(spec[8:-8])
 
-filteredAudio = FIRfilter(audio, rate, len(audio))
-#filteredSpec = freqlowpass(spec)
-
-filteredSpec = process(filteredAudio, windowLength, rate, numbands=30)
 plotFrames(spec, windowLength, Hmax, 'nonfiltered.mp4')
-plotFrames(filteredspec, windowLength, Hmax, 'filtered.mp4')
-
-plt.figure(0)
-plt.plot(audio)
-plt.figure(1)
-plt.plot(filteredAudio,'r')
-plt.show()
