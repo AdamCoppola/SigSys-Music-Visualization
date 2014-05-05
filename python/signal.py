@@ -1,4 +1,3 @@
-import pylab
 from numpy import *
 import scipy.io.wavfile as wio
 from scipy import signal as sig
@@ -6,6 +5,8 @@ from scipy import misc
 
 import matplotlib.pyplot as plt
 import matplotlib.animation as anim
+
+import bpm
 
 fps = 60
 
@@ -46,13 +47,21 @@ def bandFFT(data, numBands, sampleRate):
 
 	return averages
 
-def process (data, window, rate, numBands):
+def windowAudio (data, window):
 	windows = len(data)/window
-	spectrogram = empty(shape=(windows, numBands))
 	hamm = hamming(window)
+
+	frames = zeros((windows, window))
 	for i in xrange(0, windows-2):
-		fourierData = transform((data[i*window:(i+1)*window])*hamm)
-		spectrogram[i] = bandFFT(fourierData, numBands, rate)
+		frames[i] = data[i*window:(i+1)*window]
+
+	return frames
+
+def process (data, window, rate, numBands):
+	frames = windowAudio(data, window)
+	hamm = hamming(window)
+
+	spectrogram = [bandFFT(transform(x)*hamm, numBands, rate) for x in frames]
 
 	return spectrogram
 
@@ -114,6 +123,7 @@ seconds = len(audio)/rate
 windowRate = fps #frames per second
 windowLength = int(1/float(windowRate) * rate) #samples
 
+# bpm.simMatrix()
 spec = process(audio, windowLength, rate, numBands=30)
 Hmax = amax(spec[8:-8])
 
