@@ -129,7 +129,7 @@ smat = bpm.simMatrix(windowAudio(audio, windowLength))
 
 auto = bpm.autocorr(smat)
 
-plt.plot(linspace(0, seconds, len(auto)), auto[0])
+plt.plot(linspace(0, seconds, len(auto)), auto)
 
 plt.xlabel('Time (seconds)')
 plt.ylabel('Beat Spectrum')

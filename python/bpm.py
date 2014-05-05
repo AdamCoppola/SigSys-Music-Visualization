@@ -61,7 +61,9 @@ def beatSpectrum(smat, dur, T, t0, rate):
 def autocorr(x):
     corr2d = sig.correlate2d(x, x, mode='same')
 
-    return corr2d
+    corr = [std(c) for c in corr2d]
+
+    return corr
 
 
 
