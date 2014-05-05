@@ -116,15 +116,17 @@ def FIRfilter(signal, rate, numSamples):
 	filtered = sig.lfilter(taps, 1.0, signal)
 	return filtered
 
-rate, audio = wio.read('../wav/better.wav')
+rate, audio = wio.read('../wav/atc.wav')
 
 seconds = len(audio)/rate
 
 windowRate = fps #frames per second
 windowLength = int(1/float(windowRate) * rate) #samples
 
-# bpm.simMatrix()
-spec = process(audio, windowLength, rate, numBands=30)
-Hmax = amax(spec[8:-8])
+smat = bpm.simMatrix(windowAudio(audio, windowLength))
+bpm.beatSpectrum(smat, seconds, 2, 6, rate)
+# spec = process(audio, windowLength, rate, numBands=30)
 
-plotFrames(spec, windowLength, Hmax, 'nonfiltered.mp4')
+# Hmax = amax(spec[8:-8])
+
+# plotFrames(spec, windowLength, Hmax, 'nonfiltered.mp4')
