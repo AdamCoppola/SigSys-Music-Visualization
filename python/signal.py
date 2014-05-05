@@ -1,7 +1,8 @@
 import pylab
 from numpy import *
 import scipy.io.wavfile as wio
-from scipy import signal, misc
+from scipy import signal as sig
+from scipy import misc
 
 import matplotlib.pyplot as plt
 import matplotlib.animation as anim
@@ -58,7 +59,7 @@ def process (data, window, rate, numBands):
 def transform (data):
 	return abs(fft.fft(data))
 
-def plotFrames (frames, frameLength, Hmax):
+def plotFrames (frames, frameLength, Hmax, filename):
 	fig, ax = plt.subplots()
 
 	ax.get_xaxis().set_visible(False)
@@ -74,19 +75,36 @@ def plotFrames (frames, frameLength, Hmax):
 	ani = anim.FuncAnimation(fig, update_img, frames=len(frames), interval=1/float(fps))
 	writer = anim.writers['ffmpeg'](fps=fps)
 
-	ani.save('demo.mp4',writer=writer,dpi=100)
+	ani.save(filename,writer=writer,dpi=100)
 
 # make this better when we know which filter to use.
 def freqlowpass(signal):
 	filtered = signal
 	cutoff = 150
-	print len(signal)
-	print len(signal[1])
 	for i in xrange(0, len(signal)):
 		for j in xrange(0, len(signal[i])):
 			if j > cutoff:
 				filtered[i][j] = 0
+	return filtered
 
+def movingAverage(data, order):
+	for i in xrange(3, len(data)):
+		past = 0
+		averaged = list(data)
+		for j in range(order):
+			past = past + data[i-j]/(order + 1)
+		averaged[i] = past
+	return averaged
+
+def FIRfilter(signal, rate, numSamples):
+	filtered = signal
+	nyquist = rate/2
+	width = 5.0/nyquist
+	rippleDB = 60
+	N, beta = sig.kaiserord(rippleDB, width)
+	cutoffHz = 20
+	taps = sig.firwin(N, nyquist/2000, window=('kaiser', beta), nyq = nyquist)
+	filtered = sig.lfilter(taps, 1.0, signal)
 	return filtered
 
 rate, audio = wio.read('../wav/VVVVVV.wav')
@@ -97,10 +115,20 @@ seconds = len(audio)/rate
 windowRate = fps #frames per second
 windowLength = int(1/float(windowRate) * rate) #samples
 
+# averagedAudio = movingAverage(audio, 25)
+
 spec = process(audio, windowLength, rate, numBands=30)
 Hmax = amax(spec[8:-8])
 
+filteredAudio = FIRfilter(audio, rate, len(audio))
+#filteredSpec = freqlowpass(spec)
 
-filteredSpec = freqlowpass(spec)
+filteredSpec = process(filteredAudio, windowLength, rate, numbands=30)
+plotFrames(spec, windowLength, Hmax, 'nonfiltered.mp4')
+plotFrames(filteredspec, windowLength, Hmax, 'filtered.mp4')
 
-plotFrames(spec, windowLength, Hmax)
+plt.figure(0)
+plt.plot(audio)
+plt.figure(1)
+plt.plot(filteredAudio,'r')
+plt.show()
