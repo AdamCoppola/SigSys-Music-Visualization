@@ -89,8 +89,7 @@ def freqlowpass(signal):
 
 	return filtered
 
-rate, audio = wio.read('../wav/VVVVVV.wav')
-audio, raudio = zip(*audio)
+rate, audio = wio.read('../wav/better.wav')
 
 seconds = len(audio)/rate
 
