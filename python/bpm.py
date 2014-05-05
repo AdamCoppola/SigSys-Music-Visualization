@@ -33,6 +33,18 @@ def simMatrix(frames):
 
 	return sim
 
+def acorr(mat):
+	X = len(mat)
+	sums = zeros(X)
+
+	for x in xrange(0, X):
+		for i in xrange(0, X):
+			for j in xrange(0, len(mat[i])):
+				sums[i] += mat[i][j]*mat[(i+x)%X][(j+x)%X]
+
+	return sums
+
+
 # Finds BPM from a given beat spec
 def getBPM(beatSpec, sampleRate):
 	BeatSpec = transform(beatSpec)
@@ -40,10 +52,3 @@ def getBPM(beatSpec, sampleRate):
 def transform (data):
 	left,right = split(abs(fft.fft(data)),2)
 	return add(left,right[::-1])
-
-def autocorr(x):
-    corr2d = sig.correlate2d(x, x, mode='same')
-
-    corr = [std(c) for c in corr2d]
-
-    return corr

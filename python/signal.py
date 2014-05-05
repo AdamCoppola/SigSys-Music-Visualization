@@ -131,20 +131,20 @@ smat = bpm.simMatrix(windowAudio(audio, windowLength))
 # bpm.beatSpectrum(smat, seconds, 1, 0, rate)
 spec = process(audio, windowLength, rate, numBands=60)
 
-beatSpec = bpm.autocorr(smat)
+beatSpec = bpm.acorr(smat)
 
 # bpm.getBPM(beatSpec, rate)
 
-# plt.plot(linspace(0, seconds, len(beatSpec)), beatSpec)
+plt.plot(linspace(0, seconds, len(beatSpec)), beatSpec)
 
-# plt.xlabel('Time (seconds)')
-# plt.ylabel('Beat Spectrum')
+plt.xlabel('Time (seconds)')
+plt.ylabel('Beat Spectrum')
 
-# plt.xlim((0, seconds))
+plt.xlim((0, seconds))
 
-# plt.title('Beat Spectrum Intensity Over Time')
+plt.title('Beat Spectrum Intensity Over Time')
 
-# plt.show()
+plt.show()
 
 Hmax = amax(spec[8:-8])
 
