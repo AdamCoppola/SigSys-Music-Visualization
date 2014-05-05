@@ -72,14 +72,16 @@ def process (data, window, rate, numBands):
 def plotFrames (frames, frameLength, Hmax, beatSpec, filename):
 	fig, ax = plt.subplots()
 
+	maxBeat = amax(beatSpec)
+
 	# ax.get_xaxis().set_visible(False)
 	# ax.get_yaxis().set_visible(False)
 
-	frameImg = imageGen(frames[0], Hmax, beatSpec[0])
+	frameImg = imageGen(frames[0], Hmax, beatSpec[0]/maxBeat)
 	img = ax.imshow(frameImg, interpolation='none', cmap='GnBu', origin='lower')
 
 	def update_img(n):
-		frameImg = imageGen(frames[n], Hmax, beatSpec[n])
+		frameImg = imageGen(frames[n], Hmax, beatSpec[n]/maxBeat)
 		img.set_array(frameImg)
 
 	ani = anim.FuncAnimation(fig, update_img, frames=len(frames), interval=1/float(fps))
