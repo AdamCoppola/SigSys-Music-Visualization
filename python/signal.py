@@ -137,8 +137,6 @@ spec = process(audio, windowLength, rate, numBands=60)
 
 beatSpec = bpm.acorr(smat)
 
-# bpm.getBPM(beatSpec, rate)
-
 # plt.plot(linspace(0, seconds, len(beatSpec)), beatSpec)
 
 # plt.xlabel('Time (seconds)')
